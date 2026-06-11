@@ -21,7 +21,8 @@ enum OrderStatus {
 
 model Category {
   id       Int       @id @default(autoincrement())
-  name     String    @unique // termos, mugs, pocillos, bolsas, cubiertos, stickers
+  slug     String    @unique // url-friendly: mugs, termos, vasos-plegables, ...
+  name     String    @unique // display: Mugs, Termos, Vasos plegables, ...
   products Product[]
 
   @@map("categories")
