@@ -6,8 +6,10 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider          = "mysql"
+  url               = env("DATABASE_URL")
+  // Solo la usa `prisma migrate dev`/`reset` (dev). En prod (`migrate deploy`) no se requiere.
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 enum OrderStatus {
@@ -49,13 +51,13 @@ model Product {
 
 model ProductVariant {
   id          Int     @id @default(autoincrement())
+  sku         String  @unique // código de variante del catálogo (B435, S266, T917, ...)
   productSlug String
   product     Product @relation(fields: [productSlug], references: [slug])
-  color       String
-  hex         String
+  color       String? // nombre del color cuando el catálogo lo indica
+  hex         String? // hex cuando se conoce
   stock       Int     @default(0) // inventario por variante
 
-  @@unique([productSlug, color])
   @@index([productSlug])
   @@map("product_variants")
 }
@@ -94,12 +96,12 @@ model OrderItem {
   order          Order   @relation(fields: [orderId], references: [id])
   productSlug    String
   product        Product @relation(fields: [productSlug], references: [slug])
-  variantColor   String
+  variantSku     String
   quantity       Int
   priceBeforeTax Int // snapshot del precio al comprar (no referenciar el actual)
 
   @@index([orderId])
-  @@index([productSlug, variantColor])
+  @@index([productSlug, variantSku])
   @@map("order_items")
 }
 
