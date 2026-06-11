@@ -1,0 +1,122 @@
+// Brote backend — schema Prisma (MySQL). Prisma 6.
+// Modelo basado en docs/PROYECTO.md §5. Dinero SIEMPRE en centavos (Int), nunca Float/Decimal.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  DECLINED
+  VOIDED
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique // termos, mugs, pocillos, bolsas, cubiertos, stickers
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  slug             String   @id // PK natural; evita JOIN extra en OrderItem
+  name             String
+  shortDescription String?  @db.Text
+  material         String?
+  priceBeforeTax   Int // centavos COP SIN IVA
+  active           Boolean  @default(true)
+
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  variants   ProductVariant[]
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([active, categoryId]) // catálogo activo por categoría (cursor pagination)
+  @@map("products")
+}
+
+model ProductVariant {
+  id          Int     @id @default(autoincrement())
+  productSlug String
+  product     Product @relation(fields: [productSlug], references: [slug])
+  color       String
+  hex         String
+  stock       Int     @default(0) // inventario por variante
+
+  @@unique([productSlug, color])
+  @@index([productSlug])
+  @@map("product_variants")
+}
+
+model Order {
+  id           Int         @id @default(autoincrement())
+  reference    String      @unique // referencia Wompi — única, no reutilizable
+  status       OrderStatus @default(PENDING)
+  totalInCents Int // centavos COP, IVA incluido — recalculado en servidor
+
+  // Datos del comprador invitado (sin cuenta)
+  customerName     String
+  customerEmail    String
+  customerPhone    String?
+  customerDocument String?
+  shippingAddress  String  @db.Text
+  shippingCity     String
+  shippingState    String?
+  shippingNotes    String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items   OrderItem[]
+  payment Payment?
+
+  @@index([status])
+  @@index([customerEmail])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id             Int     @id @default(autoincrement())
+  orderId        Int
+  order          Order   @relation(fields: [orderId], references: [id])
+  productSlug    String
+  product        Product @relation(fields: [productSlug], references: [slug])
+  variantColor   String
+  quantity       Int
+  priceBeforeTax Int // snapshot del precio al comprar (no referenciar el actual)
+
+  @@index([orderId])
+  @@index([productSlug, variantColor])
+  @@map("order_items")
+}
+
+model Payment {
+  id                 Int     @id @default(autoincrement())
+  orderId            Int     @unique // 1:1 con Order
+  order              Order   @relation(fields: [orderId], references: [id])
+  transactionId      String  @unique // ID Wompi — único = idempotencia de webhooks
+  status             String // APPROVED, DECLINED, VOIDED, ERROR, PENDING (strings de Wompi)
+  amountInCents      Int
+  method             String? // CARD, PSE, NEQUI, ...
+  integritySignature String?
+  rawWebhookPayload  Json? // auditoría; puede contener PII (cuidar retención)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@map("payments")
+}
