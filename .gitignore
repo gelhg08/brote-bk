@@ -1,0 +1,30 @@
+# Dependencias
+node_modules/
+
+# Build
+dist/
+build/
+*.tsbuildinfo
+
+# Entorno / secretos — NUNCA versionar (solo .env.example se versiona)
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.*.local
+
+# Prisma (cliente generado, si se genera dentro de src)
+src/generated/
+
+# Claude Code — overrides personales (no compartidos)
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Logs / cobertura / temporales
+*.log
+npm-debug.log*
+coverage/
+.nyc_output/
+.DS_Store
+Thumbs.db
