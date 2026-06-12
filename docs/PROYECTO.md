@@ -250,21 +250,23 @@ Reglas (no negociables):
 | 2026-06-11 | `Category` con **`slug`** único (url-friendly) | Filtrado del catálogo por categoría desde el frontend (`/catalogo/[categoria]`) |
 | 2026-06-11 | Catálogo real cargado: **10 categorías, 156 productos, 430 variantes** (seed idempotente desde `docs/catalogo.md`) | Reemplaza los 8 placeholder; fuente: catálogo BE Medellín (precios sin IVA, en centavos) |
 | 2026-06-11 | Módulo Products: `GET /products` (paginado offset + filtros) y `/products/:slug`; respuesta con `priceWithTax` derivado | Contrato de API de §5; payload acotado, 404 con `{code,message,details}` |
+| 2026-06-12 | Módulo Orders (checkout invitado): `POST /orders` y `GET /orders/:id`. Total **recalculado en servidor** (IVA 19% + envío $13.000, gratis ≥ subtotal $120.000), descuento de stock atómico, referencia única `BR-…`, firma de integridad Wompi en `wompiConfig` | Reglas de pago de §5; firma verificada en `docs.wompi.co` (Regla #1) |
 
 ---
 
 ## 10. Estado actual y próximos pasos
 
 **Estado:** Fase 2 (frontend) **cerrada**. Fase 3 (backend) **en curso**.
-`.claude/` configurado, **scaffold NestJS v11 + Prisma 6 + MySQL** mergeado (PR #1) y **módulo Products**
-listo (rama `feat/products`): catálogo real cargado (10 categorías, 156 productos, 430 SKUs), endpoints
-`GET /products` y `/products/:slug` probados contra la BD. BD en Docker (`brote-mysql`, `mysql:8.4`).
+`.claude/` configurado, **scaffold** (PR #1) y **módulo Products** (PR #2) mergeados. **Módulo Orders** listo
+(rama `feat/orders`): `POST /orders` (checkout invitado, total recalculado, stock atómico, firma Wompi) y
+`GET /orders/:id`, probados contra la BD. Catálogo real: 10 categorías, 156 productos, 430 SKUs.
+BD en Docker (`brote-mysql`, `mysql:8.4`). **Siguiente: módulo Payments** (webhook Wompi + idempotencia).
 
 **Próximos pasos:**
 1. ~~Configurar Claude Code en `brote-bk`.~~ ✅ Hecho (2026-06-10).
 2. ~~Inicializar NestJS + Prisma + MySQL.~~ ✅ Hecho (2026-06-11, Prisma 6.19.2).
 3. ~~Módulo Products: lista/detalle + seed del catálogo real.~~ ✅ Hecho (2026-06-11).
-4. Módulo Orders: crear orden invitado, referencia única, validar stock, recalcular total.
+4. ~~Módulo Orders: crear orden invitado, referencia única, validar stock, recalcular total.~~ ✅ Hecho (2026-06-12, con `wompiConfig` + firma de integridad).
 5. Módulo Payments: firma integridad Wompi, configuración widget, webhook con verificación, idempotencia.
 6. Testing: unit + integration con Wompi mockeado (todos los escenarios de §5).
 7. Conectar frontend (reemplazar mocks por fetch real + widget Wompi real).
