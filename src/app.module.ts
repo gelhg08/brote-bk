@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { validateEnv } from './config/env.validation';
 import { PrismaModule } from './prisma/prisma.module';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { PrismaModule } from './prisma/prisma.module';
     // Rate limiting global: 100 req / 60s por IP (el webhook se exceptúa con @SkipThrottle).
     ThrottlerModule.forRoot([{ ttl: seconds(60), limit: 100 }]),
     PrismaModule,
-    // Módulos de dominio (products, orders, payments) se agregan aquí en sus features.
+    ProductsModule,
+    // Módulos de dominio restantes (orders, payments) se agregan aquí en sus features.
   ],
   controllers: [AppController],
   providers: [

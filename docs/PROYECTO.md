@@ -245,20 +245,25 @@ Reglas (no negociables):
 | 2026-06-10 | Claude Code configurado en `brote-bk` (`.claude/` versionado): CLAUDE.md, 4 skills, 5 agents, 2 hooks portables (Node), settings.json, .mcp.json read-only | Fase 3 paso 1; investigación Regla #1 (Wompi, NestJS v11, Prisma/MySQL, seguridad pagos, config Claude Code), vigente 2026 |
 | 2026-06-10 | Git flow ratificado: feature branch + PR a `main`; `finalizador-feature` exige tests verdes antes de push; setup inicial puede ir directo a `main` | Servicio de pagos: trazabilidad y calidad |
 | 2026-06-10 | Hook de seguridad bloquea: Wompi producción (pub_prod_/prv_prod_/prod_*/production.wompi.co), `git push --force`, comandos `aws` mutantes | Reglas #2, #5 y #7 forzadas por el harness |
+| 2026-06-11 | Scaffold NestJS v11 + **Prisma 6.19.2** (no v7) | Estable y sin fricción ESM/driver-adapter con NestJS+Jest en un servicio de pagos; investigación Regla #1 |
+| 2026-06-11 | `ProductVariant` con **`sku` único** (código de catálogo: B435, S266…), `color`/`hex` opcionales; `OrderItem.variantColor`→`variantSku` | El catálogo real identifica variantes por SKU, no por color |
+| 2026-06-11 | `Category` con **`slug`** único (url-friendly) | Filtrado del catálogo por categoría desde el frontend (`/catalogo/[categoria]`) |
+| 2026-06-11 | Catálogo real cargado: **10 categorías, 156 productos, 430 variantes** (seed idempotente desde `docs/catalogo.md`) | Reemplaza los 8 placeholder; fuente: catálogo BE Medellín (precios sin IVA, en centavos) |
+| 2026-06-11 | Módulo Products: `GET /products` (paginado offset + filtros) y `/products/:slug`; respuesta con `priceWithTax` derivado | Contrato de API de §5; payload acotado, 404 con `{code,message,details}` |
 
 ---
 
 ## 10. Estado actual y próximos pasos
 
 **Estado:** Fase 2 (frontend) **cerrada**. Fase 3 (backend) **en curso**.
-Repo `brote-bk` creado, clonado y **con Claude Code configurado** (`.claude/` versionado: CLAUDE.md, skills,
-agents, hooks, settings, `.mcp.json`). Pendiente: arrancar el scaffold NestJS.
+`.claude/` configurado, **scaffold NestJS v11 + Prisma 6 + MySQL** mergeado (PR #1) y **módulo Products**
+listo (rama `feat/products`): catálogo real cargado (10 categorías, 156 productos, 430 SKUs), endpoints
+`GET /products` y `/products/:slug` probados contra la BD. BD en Docker (`brote-mysql`, `mysql:8.4`).
 
 **Próximos pasos:**
 1. ~~Configurar Claude Code en `brote-bk`.~~ ✅ Hecho (2026-06-10).
-2. Inicializar NestJS + Prisma + MySQL (schema basado en el modelo de datos de §5). **Re-verificar versión de
-   Prisma vigente (línea v7 a 2026-06) y de NestJS (v11) antes del scaffold — Regla #1.**
-3. Módulo Products: CRUD + seed de los 8 productos placeholder.
+2. ~~Inicializar NestJS + Prisma + MySQL.~~ ✅ Hecho (2026-06-11, Prisma 6.19.2).
+3. ~~Módulo Products: lista/detalle + seed del catálogo real.~~ ✅ Hecho (2026-06-11).
 4. Módulo Orders: crear orden invitado, referencia única, validar stock, recalcular total.
 5. Módulo Payments: firma integridad Wompi, configuración widget, webhook con verificación, idempotencia.
 6. Testing: unit + integration con Wompi mockeado (todos los escenarios de §5).
