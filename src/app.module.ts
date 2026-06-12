@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { validateEnv } from './config/env.validation';
 import { OrdersModule } from './orders/orders.module';
+import { PaymentsModule } from './payments/payments.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProductsModule } from './products/products.module';
 
@@ -18,7 +19,7 @@ import { ProductsModule } from './products/products.module';
     PrismaModule,
     ProductsModule,
     OrdersModule,
-    // Módulo de dominio restante (payments) se agrega aquí en su feature.
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [

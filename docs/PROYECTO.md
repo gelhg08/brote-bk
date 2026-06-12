@@ -251,16 +251,21 @@ Reglas (no negociables):
 | 2026-06-11 | Catálogo real cargado: **10 categorías, 156 productos, 430 variantes** (seed idempotente desde `docs/catalogo.md`) | Reemplaza los 8 placeholder; fuente: catálogo BE Medellín (precios sin IVA, en centavos) |
 | 2026-06-11 | Módulo Products: `GET /products` (paginado offset + filtros) y `/products/:slug`; respuesta con `priceWithTax` derivado | Contrato de API de §5; payload acotado, 404 con `{code,message,details}` |
 | 2026-06-12 | Módulo Orders (checkout invitado): `POST /orders` y `GET /orders/:id`. Total **recalculado en servidor** (IVA 19% + envío $13.000, gratis ≥ subtotal $120.000), descuento de stock atómico, referencia única `BR-…`, firma de integridad Wompi en `wompiConfig` | Reglas de pago de §5; firma verificada en `docs.wompi.co` (Regla #1) |
+| 2026-06-12 | Módulo Payments (webhook = fuente de verdad): `POST /webhooks/wompi` + `GET /payments/confirm/:id`. Verificación de firma del webhook (`signature.properties` + `signature.timestamp` + events_secret, SHA256, `timingSafeEqual`), anti-replay, **idempotencia** por `transactionId`, recálculo/verificación de monto, mapeo de estado | Formato del webhook reverificado en `docs.wompi.co` (Regla #1); skill `wompi-mocking` (14 escenarios) |
 
 ---
 
 ## 10. Estado actual y próximos pasos
 
 **Estado:** Fase 2 (frontend) **cerrada**. Fase 3 (backend) **en curso**.
-`.claude/` configurado, **scaffold** (PR #1) y **módulo Products** (PR #2) mergeados. **Módulo Orders** listo
-(rama `feat/orders`): `POST /orders` (checkout invitado, total recalculado, stock atómico, firma Wompi) y
-`GET /orders/:id`, probados contra la BD. Catálogo real: 10 categorías, 156 productos, 430 SKUs.
-BD en Docker (`brote-mysql`, `mysql:8.4`). **Siguiente: módulo Payments** (webhook Wompi + idempotencia).
+`.claude/` configurado; **scaffold** (PR #1), **Products** (PR #2) y **Orders** (PR #3) mergeados.
+**Módulo Payments** listo (rama `feat/payments`): webhook `transaction.updated` (firma verificada sobre raw
+body, anti-replay, idempotencia, recálculo de monto, mapeo de estado) + confirmación por API; probado
+end-to-end (orden → webhook firmado → `PAID` + `Payment`). Catálogo real: 10 categorías, 156 productos, 430
+SKUs. BD en Docker (`brote-mysql`, `mysql:8.4`). **Backend Fase 3 ~completo.**
+
+**Siguiente:** cargar llaves **sandbox** reales de Wompi en `.env`, e2e con Widget real, y **Fase 4**
+(conectar el frontend: reemplazar mocks MSW por la API). Opcional: emails/guía de envío al pasar a `PAID`.
 
 **Próximos pasos:**
 1. ~~Configurar Claude Code en `brote-bk`.~~ ✅ Hecho (2026-06-10).
